@@ -1,13 +1,14 @@
 NAME := canim
 CC := cc
-CFLAGS := -Wall -Wextra -Werror -Wunused-function -MMD -MP
+CFLAGS := -Wall -Wextra -Werror -Wunused-function -MMD -MP -ofast
+LDFLAGS := -lGL -lglfw
 INCLUDES = -I ./include
 
 all: $(NAME)
 
 ifdef DEBUG
 CFLAGS += -g3
-CFLAGS += -D DEBUG=TRUE
+CFLAGS += -D DEBUG=true
 endif
 ifdef FSAN
 CFLAGS += -fsanitize=address
@@ -16,10 +17,10 @@ endif
 SRC_PATH := src/
 OBJ_PATH := obj/
 
-MATH_SRC		:= math.c
+DISPLAY_SRC		:= window.c
 
 SRC := main.c \
-	   $(addprefix math/, $(MATH_SRC)) \
+	   $(addprefix display/, $(DISPLAY_SRC)) \
 
 SRCS := $(addprefix $(SRC_PATH), $(SRC))
 OBJ := $(SRC:.c=.o)
