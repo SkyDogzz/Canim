@@ -47,20 +47,48 @@ void mainloop(t_canim *canim) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	for (int y = 0; y < HEIGHT; y++) {
-		for (int x = 0; x < WIDTH; x++) {
-			unsigned char r = (unsigned char)((x / (float)(WIDTH - 1)) * 255.0f);
-			unsigned char g = 0;
-			unsigned char b = (unsigned char)((y / (float)(HEIGHT - 1)) * 255.0f);
-			set_pixel(canim, x, y, r, g, b);
-		}
-	}
+	/*for (int y = 0; y < HEIGHT; y++) {*/
+	/*	for (int x = 0; x < WIDTH; x++) {*/
+	/*		unsigned char r = (unsigned char)((x / (float)(WIDTH - 1)) * 255.0f);*/
+	/*		unsigned char g = 0;*/
+	/*		unsigned char b = (unsigned char)((y / (float)(HEIGHT - 1)) * 255.0f);*/
+	/*		set_pixel(canim, x, y, r, g, b);*/
+	/*	}*/
+	/*}*/
+	t_point a, b, c;
+	a.x = 0;
+	a.y = 4;
+	b.x = 0;
+	b.y = 0;
+	c.x = 4;
+	c.y = 0;
+	int goal = 4;
+
+	int		step = 1000;
+	t_point points[step];
 
 	while (!glfwWindowShouldClose(canim->window)) {
+		memset(canim->pixels, 0, WIDTH * HEIGHT * 3);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		if (goal > 0 && b.x < goal) {
+			b.x += 0.01;
+			b.y += 0.01;
+		} else {
+			b.x -= 0.01;
+			b.y -= 0.01;
+		}
+		if (b.x >= 4 && goal == 4)
+			goal = 0;
+		else if (b.x <= 0 && goal == 0)
+			goal = 4;
+		quadratic_bezier(points, a, b, c, step);
+		for (int i = 0; i < step; i++) {
+			set_pixel(canim, points[i].x * 100, points[i].y * 100, 255, 0, 255);
+		}
+
 		glBindTexture(GL_TEXTURE_2D, canim->tex);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, canim->pixels);
-
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);

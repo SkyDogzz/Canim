@@ -19,8 +19,11 @@ OBJ_PATH := obj/
 
 DISPLAY_SRC		:= window.c
 
+MATH_SRC		:= math.c
+
 SRC := main.c \
 	   $(addprefix display/, $(DISPLAY_SRC)) \
+	   $(addprefix math/, $(MATH_SRC)) \
 
 SRCS := $(addprefix $(SRC_PATH), $(SRC))
 OBJ := $(SRC:.c=.o)

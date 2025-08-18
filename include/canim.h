@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <memory.h>
 
 #ifndef DEBUG
 #define DEBUG false
@@ -17,6 +18,11 @@
 #define HEIGHT 480
 #define GLFW_CANIM_MAJOR 2
 #define GLFW_CANIM_MINOR 0
+
+typedef struct s_point {
+	float x;
+	float y;
+} t_point;
 
 typedef struct s_canim {
 	GLFWwindow	 *window;
@@ -28,5 +34,6 @@ typedef struct s_canim {
 } t_canim;
 
 void mainloop(t_canim *canim);
+void quadratic_bezier(t_point *points, t_point p, t_point q, t_point s, int step);
 
 #endif
