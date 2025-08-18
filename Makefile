@@ -23,21 +23,22 @@ SRC := main.c \
 SRCS := $(addprefix $(SRC_PATH), $(SRC))
 OBJS := $(addprefix $(OBJ_PATH), $(SRC:.c=.o))
 
-$(OBJ_PATH)%.o: $(SRC_PATH)%.c
-	@mkdir -p $(dir $@)
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+all: $(NAME)
 
-# Linking 💖
+$(OBJ_PATH)%.o: $(SRC_PATH)%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
 $(NAME): $(OBJS)
 	@$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $(NAME)
 
 -include $(wildcard $(OBJS:.o=.d))
 
 clean:
-	@rm -rf $(OBJ_PATH)
+	rm -rf $(OBJ_PATH)
 
 fclean: clean
-	@rm -f $(NAME)
+	rm -f $(NAME)
 
 re: fclean all
 
