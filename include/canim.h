@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <memory.h>
+#include <math.h>
 
 #ifndef DEBUG
 #define DEBUG false
@@ -35,5 +36,6 @@ typedef struct s_canim {
 
 void mainloop(t_canim *canim);
 void quadratic_bezier(t_point *points, t_point p, t_point q, t_point s, int step);
+void cubic_bezier(t_point *points, t_point p1, t_point p2, t_point p3, t_point p4, int step);
 
 #endif
