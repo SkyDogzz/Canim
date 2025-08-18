@@ -1,0 +1,46 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wunused-function",
+      "-I",
+      "./include",
+      "-c",
+      "-I",
+      "/home/tstephan/.local/glfw/include",
+      "-I",
+      ".",
+      "-o",
+      "obj/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/tstephan/canim",
+    "file": "/home/tstephan/canim/src/main.c",
+    "output": "/home/tstephan/canim/obj/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wunused-function",
+      "-I",
+      "./include",
+      "-c",
+      "-I",
+      "/home/tstephan/.local/glfw/include",
+      "-I",
+      ".",
+      "-o",
+      "obj/math/math.o",
+      "src/math/math.c"
+    ],
+    "directory": "/home/tstephan/canim",
+    "file": "/home/tstephan/canim/src/math/math.c",
+    "output": "/home/tstephan/canim/obj/math/math.o"
+  }
+]
