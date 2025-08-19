@@ -3,3 +3,5 @@ obj
 canim
 
 .cache
+
+lua*

@@ -11,6 +11,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #ifndef DEBUG
 #define DEBUG false
 #endif
