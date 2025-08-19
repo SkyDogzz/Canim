@@ -196,11 +196,48 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 	(void)path;
 }
 
+void add_last_dlst(t_segment *head, t_segment *tail) {
+	while (head->next)
+		head = head->next;
+	head->next = tail;
+	tail->prev = head;
+}
+
+t_path *create_circle(t_point c, float r) {
+	float k = 0.5522847498f;
+	float cc = r * k;
+
+	t_point moveto[4] = {{c.x, c.y - r}, {c.x + r, c.y}, {c.x, c.y + r}, {c.x - r, c.y}};
+
+	t_point controls[4][2] = {{{c.x + cc, c.y - r}, {c.x + r, c.y - cc}},
+							  {{c.x + r, c.y + cc}, {c.x + cc, c.y + r}},
+							  {{c.x - cc, c.y + r}, {c.x - r, c.y + cc}},
+							  {{c.x - r, c.y - cc}, {c.x - cc, c.y - r}}};
+
+	t_path *path = create_path();
+	add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(moveto[0].x, moveto[0].y)));
+
+	for (int i = 0; i < 4; i++) {
+		t_point *pts = create_3_points(controls[i][0].x, controls[i][0].y, controls[i][1].x, controls[i][1].y,
+									   moveto[(i + 1) % 4].x, moveto[(i + 1) % 4].y);
+		add_seg_to_path(path, create_segment(SEG_CUBIC, pts));
+	}
+	add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
+
+	return path;
+}
+
 void render_path(t_canim *canim) {
 	t_path	  *path;
 	t_segment *segment;
 
 	path = simple_path();
+	segment = path->head;
+	while (segment) {
+		render_segment(canim, path, segment);
+		segment = segment->next;
+	}
+	path = create_circle((t_point){WIDTH / 2, HEIGHT / 2}, 200);
 	segment = path->head;
 	while (segment) {
 		render_segment(canim, path, segment);
