@@ -3,10 +3,6 @@
 t_segment *create_segment(t_segtype segtype, t_point *points) {
 	t_segment *segment;
 
-	if (segtype == SEG_CLOSE) {
-		printf("Cant create segment with SEG_CLOSE (only used to say if the path is closed)\n");
-		return (NULL);
-	}
 	segment = malloc(sizeof(t_segment));
 	if (!segment)
 		return (NULL);
@@ -82,38 +78,47 @@ t_path *simple_path(void) {
 	path = create_path();
 	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(200, 200)));
 	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));
-	path =
-		add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162.5, 14.753, 204.88, 314.159, 42.42, 8.590)));
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88, 314.159, 42.42, 8.590)));
 	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));
 	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));
+	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));
 	return path;
 }
 
 // bresenham implementtion (TODO switch to WU line)
 void render_line(t_canim *canim, t_point p1, t_point p2) {
-    int x1 = (int)p1.x;
-    int y1 = (int)p1.y;
-    int x2 = (int)p2.x;
-    int y2 = (int)p2.y;
+	int x1 = (int)p1.x;
+	int y1 = (int)p1.y;
+	int x2 = (int)p2.x;
+	int y2 = (int)p2.y;
 
-    int dx = abs(x2 - x1);
-    int dy = abs(y2 - y1);
+	int dx = abs(x2 - x1);
+	int dy = abs(y2 - y1);
 
-    int sx = (x1 < x2) ? 1 : -1;
-    int sy = (y1 < y2) ? 1 : -1;
+	int sx = (x1 < x2) ? 1 : -1;
+	int sy = (y1 < y2) ? 1 : -1;
 
-    int err = dx - dy;
+	int err = dx - dy;
 
-    while (1) {
-        set_pixel(canim, x1, y1, 255, 255, 255);
-        if (x1 == x2 && y1 == y2)
-            break;
-        int e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x1 += sx; }
-        if (e2 < dx)  { err += dx; y1 += sy; }
-    }
+	while (1) {
+		set_pixel(canim, x1, y1, 255, 255, 255);
+		if (x1 == x2 && y1 == y2)
+			break;
+		int e2 = 2 * err;
+		if (e2 > -dy) {
+			err -= dy;
+			x1 += sx;
+		}
+		if (e2 < dx) {
+			err += dx;
+			y1 += sy;
+		}
+	}
 }
-
 
 void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 	if (!segment->prev)
@@ -136,6 +141,21 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 				render_line(canim, segment->prev->p[0], segment->p[0]);
 			}
 			set_pixel(canim, segment->p[0].x, segment->p[0].y, 255, 0, 0);
+		} else if (segment->type == SEG_CLOSE) {
+			t_segment *cursor;
+
+			cursor = segment;
+			while (cursor->prev) {
+				if (cursor->type == SEG_MOVETO)
+					break;
+				cursor = cursor->prev;
+			}
+			segment->p[0] = cursor->p[0];
+			if (segment->prev->type == SEG_CUBIC) {
+				render_line(canim, segment->prev->p[2], segment->p[0]);
+			} else {
+				render_line(canim, segment->prev->p[0], segment->p[0]);
+			}
 		}
 	}
 	(void)path;
