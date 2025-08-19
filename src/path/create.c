@@ -11,6 +11,9 @@ t_segment *create_segment(t_segtype segtype, t_point *points) {
 	segment->type = segtype;
 	if (segtype == SEG_MOVETO || segtype == SEG_LINETO) {
 		segment->p[0] = points[0];
+	} else if (segtype == SEG_QUADRATIC) {
+		segment->p[0] = points[0];
+		segment->p[1] = points[1];
 	} else if (segtype == SEG_CUBIC) {
 		segment->p[0] = points[0];
 		segment->p[1] = points[1];
@@ -58,6 +61,18 @@ t_point *create_point(float x, float y) {
 	return point;
 }
 
+t_point *create_2_points(float x1, float y1, float x2, float y2) {
+	t_point *points = malloc(2 * sizeof(t_point));
+
+	if (!points)
+		return NULL;
+	points[0].x = x1;
+	points[0].y = y1;
+	points[1].x = x2;
+	points[1].y = y2;
+	return points;
+}
+
 t_point *create_3_points(float x1, float y1, float x2, float y2, float x3, float y3) {
 	t_point *points = malloc(3 * sizeof(t_point));
 
@@ -76,16 +91,21 @@ t_path *simple_path(void) {
 	t_path *path;
 
 	path = create_path();
-	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(200, 200)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88, 314.159, 42.42, 8.590)));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));
-	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));
+	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(200, 200)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88,
+	 * 314.159, 42.42, 8.590)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));*/
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));
+	/*path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));*/
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));
 	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));
 	return path;
 }
 
@@ -129,21 +149,33 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		if (segment->type == SEG_CUBIC) {
 			if (segment->prev->type == SEG_CUBIC)
 				cubic_bezier(points, segment->prev->p[2], segment->p[0], segment->p[1], segment->p[2], step);
+			else if (segment->prev->type == SEG_QUADRATIC)
+				cubic_bezier(points, segment->prev->p[1], segment->p[0], segment->p[1], segment->p[2], step);
 			else
 				cubic_bezier(points, segment->prev->p[0], segment->p[0], segment->p[1], segment->p[2], step);
 			for (int i = 0; i < step; i++) {
 				set_pixel(canim, points[i].x, points[i].y, 255, 255, 255);
 			}
-		} else if (segment->type == SEG_LINETO) {
-			if (segment->prev->type == SEG_CUBIC) {
-				render_line(canim, segment->prev->p[2], segment->p[0]);
-			} else {
-				render_line(canim, segment->prev->p[0], segment->p[0]);
+		} else if (segment->type == SEG_QUADRATIC) {
+			if (segment->prev->type == SEG_CUBIC)
+				quadratic_bezier(points, segment->prev->p[2], segment->p[0], segment->p[1], step);
+			else if (segment->prev->type == SEG_QUADRATIC)
+				quadratic_bezier(points, segment->prev->p[1], segment->p[0], segment->p[1], step);
+			else
+				quadratic_bezier(points, segment->prev->p[0], segment->p[0], segment->p[1], step);
+			for (int i = 0; i < step; i++) {
+				set_pixel(canim, points[i].x, points[i].y, 255, 255, 255);
 			}
+		} else if (segment->type == SEG_LINETO) {
+			if (segment->prev->type == SEG_CUBIC)
+				render_line(canim, segment->prev->p[2], segment->p[0]);
+			else if (segment->prev->type == SEG_QUADRATIC)
+				render_line(canim, segment->prev->p[1], segment->p[0]);
+			else
+				render_line(canim, segment->prev->p[0], segment->p[0]);
 			set_pixel(canim, segment->p[0].x, segment->p[0].y, 255, 0, 0);
 		} else if (segment->type == SEG_CLOSE) {
 			t_segment *cursor;
-
 			cursor = segment;
 			while (cursor->prev) {
 				if (cursor->type == SEG_MOVETO)
@@ -153,6 +185,9 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 			segment->p[0] = cursor->p[0];
 			if (segment->prev->type == SEG_CUBIC) {
 				render_line(canim, segment->prev->p[2], segment->p[0]);
+
+			} else if (segment->prev->type == SEG_QUADRATIC) {
+				render_line(canim, segment->prev->p[1], segment->p[0]);
 			} else {
 				render_line(canim, segment->prev->p[0], segment->p[0]);
 			}
