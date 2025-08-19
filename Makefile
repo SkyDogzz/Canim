@@ -17,6 +17,7 @@ SRC_PATH := src/
 OBJ_PATH := obj/
 
 SRC := main.c \
+	   path/create.c \
 	   display/window.c \
 	   math/math.c
 

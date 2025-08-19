@@ -111,8 +111,8 @@ void mainloop(t_canim *canim) {
 	// int step = 1000;
 	// t_point points[step];
 
-	int goal = 100;
-	float flat = 0;
+	/*int goal = 100;*/
+	/*float flat = 0;*/
 	while (!glfwWindowShouldClose(canim->window)) {
 		memset(canim->pixels, 0, WIDTH * HEIGHT * 3);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -132,17 +132,18 @@ void mainloop(t_canim *canim) {
 		// for (int i = 0; i < step; i++) {
 		// 	set_pixel(canim, points[i].x * 100, points[i].y * 100, 255, 0, 255);
 		// }
-		create_square(canim, flat);
-		if (goal > flat)
-			flat += 2;
-		else if (goal < flat)
-			flat -= 2;
-		if (flat == goal) {
-			if (goal == 100)
-				goal = 0;
-			else
-				goal = 100;
-		}
+		/*create_square(canim, flat);*/
+		/*if (goal > flat)*/
+		/*	flat += 2;*/
+		/*else if (goal < flat)*/
+		/*	flat -= 2;*/
+		/*if (flat == goal) {*/
+		/*	if (goal == 100)*/
+		/*		goal = 0;*/
+		/*	else*/
+		/*		goal = 100;*/
+		/*}*/
+		render_path(canim);
 
 		glBindTexture(GL_TEXTURE_2D, canim->tex);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGB,

@@ -6,14 +6,14 @@ static void init_canim(t_canim *canim) {
 	canim->start_time = glfwGetTime();
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
 	t_canim canim;
 
 	init_canim(&canim);
-	if (argc == 1) {
-		printf("Usage = %s [filename]\n", argv[0]);
-		exit(1);
-	}
+	/*if (argc == 1) {*/
+	/*	printf("Usage = %s [filename]\n", argv[0]);*/
+	/*	exit(1);*/
+	/*}*/
 	mainloop(&canim);
 	exit(0);
 }
