@@ -41,7 +41,15 @@ typedef struct s_canim {
 	double		  last_frame;
 } t_canim;
 
-typedef enum e_segtype { SEG_MOVETO, SEG_LINETO, SEG_CUBIC, SEG_QUADRATIC, SEG_CLOSE } t_segtype;
+typedef enum e_segtype {
+	SEG_MOVETO,
+	SEG_LINETO,
+	SEG_CUBIC,
+	SEG_QUADRATIC,
+	SEG_CLOSE,
+	SEG_SMOOTH_QUADRATIC,
+	SEG_SMOOTH_CUBIC
+} t_segtype;
 
 typedef struct s_segment {
 	t_segtype type;
