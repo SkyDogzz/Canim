@@ -140,57 +140,63 @@ void render_line(t_canim *canim, t_point p1, t_point p2) {
 	}
 }
 
+#define MAX_POINTS 1000
+
 void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 	if (!segment->prev)
 		return;
-	else {
-		int		step = 1000;
-		t_point points[step];
-		if (segment->type == SEG_CUBIC) {
-			if (segment->prev->type == SEG_CUBIC)
-				cubic_bezier(points, segment->prev->p[2], segment->p[0], segment->p[1], segment->p[2], step);
-			else if (segment->prev->type == SEG_QUADRATIC)
-				cubic_bezier(points, segment->prev->p[1], segment->p[0], segment->p[1], segment->p[2], step);
-			else
-				cubic_bezier(points, segment->prev->p[0], segment->p[0], segment->p[1], segment->p[2], step);
-			for (int i = 0; i < step; i++) {
-				set_pixel(canim, points[i].x, points[i].y, 255, 255, 255);
-			}
-		} else if (segment->type == SEG_QUADRATIC) {
-			if (segment->prev->type == SEG_CUBIC)
-				quadratic_bezier(points, segment->prev->p[2], segment->p[0], segment->p[1], step);
-			else if (segment->prev->type == SEG_QUADRATIC)
-				quadratic_bezier(points, segment->prev->p[1], segment->p[0], segment->p[1], step);
-			else
-				quadratic_bezier(points, segment->prev->p[0], segment->p[0], segment->p[1], step);
-			for (int i = 0; i < step; i++) {
-				set_pixel(canim, points[i].x, points[i].y, 255, 255, 255);
-			}
-		} else if (segment->type == SEG_LINETO) {
-			if (segment->prev->type == SEG_CUBIC)
-				render_line(canim, segment->prev->p[2], segment->p[0]);
-			else if (segment->prev->type == SEG_QUADRATIC)
-				render_line(canim, segment->prev->p[1], segment->p[0]);
-			else
-				render_line(canim, segment->prev->p[0], segment->p[0]);
-			set_pixel(canim, segment->p[0].x, segment->p[0].y, 255, 0, 0);
-		} else if (segment->type == SEG_CLOSE) {
-			t_segment *cursor;
-			cursor = segment;
-			while (cursor->prev) {
-				if (cursor->type == SEG_MOVETO)
-					break;
-				cursor = cursor->prev;
-			}
-			segment->p[0] = cursor->p[0];
-			if (segment->prev->type == SEG_CUBIC) {
-				render_line(canim, segment->prev->p[2], segment->p[0]);
 
-			} else if (segment->prev->type == SEG_QUADRATIC) {
-				render_line(canim, segment->prev->p[1], segment->p[0]);
-			} else {
-				render_line(canim, segment->prev->p[0], segment->p[0]);
-			}
+	t_point points[MAX_POINTS];
+	int		count = 0;
+	float	tol = 0.01f;	 // tolérance en pixels (ajuste selon la précision voulue)
+
+	if (segment->type == SEG_CUBIC) {
+		if (segment->prev->type == SEG_CUBIC) {
+			points[count++] = segment->prev->p[2];
+			cubic_adaptive(segment->prev->p[2], segment->p[0], segment->p[1], segment->p[2], tol, points, &count);
+		} else if (segment->prev->type == SEG_QUADRATIC) {
+			points[count++] = segment->prev->p[1];
+			cubic_adaptive(segment->prev->p[1], segment->p[0], segment->p[1], segment->p[2], tol, points, &count);
+		} else {
+			points[count++] = segment->prev->p[0];
+			cubic_adaptive(segment->prev->p[0], segment->p[0], segment->p[1], segment->p[2], tol, points, &count);
+		}
+		for (int i = 0; i < count - 1; i++)
+			render_line_wu(canim, points[i], points[i + 1]);
+	} else if (segment->type == SEG_QUADRATIC) {
+		if (segment->prev->type == SEG_CUBIC) {
+			points[count++] = segment->prev->p[2];
+			quadratic_adaptive(segment->prev->p[2], segment->p[0], segment->p[1], tol, points, &count);
+		} else if (segment->prev->type == SEG_QUADRATIC) {
+			points[count++] = segment->prev->p[1];
+			quadratic_adaptive(segment->prev->p[1], segment->p[0], segment->p[1], tol, points, &count);
+		} else {
+			points[count++] = segment->prev->p[0];
+			quadratic_adaptive(segment->prev->p[0], segment->p[0], segment->p[1], tol, points, &count);
+		}
+		for (int i = 0; i < count - 1; i++)
+			render_line_wu(canim, points[i], points[i + 1]);
+	} else if (segment->type == SEG_LINETO) {
+		if (segment->prev->type == SEG_CUBIC)
+			render_line_wu(canim, segment->prev->p[2], segment->p[0]);
+		else if (segment->prev->type == SEG_QUADRATIC)
+			render_line_wu(canim, segment->prev->p[1], segment->p[0]);
+		else
+			render_line_wu(canim, segment->prev->p[0], segment->p[0]);
+	} else if (segment->type == SEG_CLOSE) {
+		t_segment *cursor = segment;
+		while (cursor->prev) {
+			if (cursor->type == SEG_MOVETO)
+				break;
+			cursor = cursor->prev;
+		}
+		segment->p[0] = cursor->p[0];
+		if (segment->prev->type == SEG_CUBIC) {
+			render_line_wu(canim, segment->prev->p[2], segment->p[0]);
+		} else if (segment->prev->type == SEG_QUADRATIC) {
+			render_line_wu(canim, segment->prev->p[1], segment->p[0]);
+		} else {
+			render_line_wu(canim, segment->prev->p[0], segment->p[0]);
 		}
 	}
 	(void)path;

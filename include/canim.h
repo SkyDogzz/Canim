@@ -3,6 +3,9 @@
 
 #include <GLFW/glfw3.h>
 #include <fcntl.h>
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
 #include <math.h>
 #include <memory.h>
 #include <stdbool.h>
@@ -10,10 +13,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <unistd.h>
-
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
 
 #ifndef DEBUG
 #define DEBUG false
@@ -61,5 +60,10 @@ void quadratic_bezier(t_point *points, t_point p, t_point q, t_point s, int step
 void cubic_bezier(t_point *points, t_point p1, t_point p2, t_point p3, t_point p4, int step);
 void set_pixel(t_canim *canim, int x, int y, unsigned char r, unsigned char g, unsigned char b);
 void render_path(t_canim *canim);
+
+void quadratic_adaptive(t_point p, t_point q, t_point r, float tol, t_point *points, int *count);
+void cubic_adaptive(t_point p1, t_point p2, t_point p3, t_point p4, float tol, t_point *points, int *count);
+
+void render_line_wu(t_canim *canim, t_point p1, t_point p2);
 
 #endif
