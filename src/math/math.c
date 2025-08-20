@@ -53,8 +53,6 @@ void cubic_bezier(t_point *points, t_point p1, t_point p2, t_point p3, t_point p
 	}
 }
 
-#define MAX_POINTS 1000
-
 void quadratic_adaptive(t_point p, t_point q, t_point r, float tol, t_point *points, int *count) {
 	if (*count >= MAX_POINTS)
 		return;

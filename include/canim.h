@@ -23,6 +23,10 @@
 #define GLFW_CANIM_MAJOR 2
 #define GLFW_CANIM_MINOR 0
 
+#define MAX_POINTS 1000
+
+#define LINE_WU false
+
 typedef struct s_point {
 	float x;
 	float y;
