@@ -18,9 +18,9 @@
 #define DEBUG false
 #endif
 
-#define WIDTH 720
-#define HEIGHT 480
-#define GLFW_CANIM_MAJOR 2
+#define WIDTH 1280
+#define HEIGHT 720
+#define GLFW_CANIM_MAJOR 3
 #define GLFW_CANIM_MINOR 0
 
 #define MAX_POINTS 1000
@@ -54,6 +54,7 @@ typedef enum e_segtype {
 typedef struct s_segment {
 	t_segtype type;
 	// for LINETO: endpoint in p[0]
+	// for QUADRATIC:  control1 in p[0], ENDPOINT in p[1]
 	// for CUBIC:  control1 in p[0], control2 in p[1], endpoint in p[2]
 	t_point p[3];
 
@@ -68,14 +69,13 @@ typedef struct s_path {
 } t_path;
 
 void mainloop(t_canim *canim);
-void quadratic_bezier(t_point *points, t_point p, t_point q, t_point s, int step);
-void cubic_bezier(t_point *points, t_point p1, t_point p2, t_point p3, t_point p4, int step);
 void set_pixel(t_canim *canim, int x, int y, unsigned char r, unsigned char g, unsigned char b);
 void render_path(t_canim *canim);
 
 void quadratic_adaptive(t_point p, t_point q, t_point r, float tol, t_point *points, int *count);
 void cubic_adaptive(t_point p1, t_point p2, t_point p3, t_point p4, float tol, t_point *points, int *count);
 
+void render_line_bresen(t_canim *canim, t_point p1, t_point p2);
 void render_line_wu(t_canim *canim, t_point p1, t_point p2);
 
 #endif

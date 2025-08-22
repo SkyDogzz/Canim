@@ -19,7 +19,8 @@ OBJ_PATH := obj/
 SRC := main.c \
 	   path/create.c \
 	   display/window.c \
-	   math/math.c \
+	   math/adaptive.c \
+	   math/bresenham.c \
 	   math/xiolinwu.c
 
 SRCS := $(addprefix $(SRC_PATH), $(SRC))

@@ -92,64 +92,37 @@ t_point *create_3_points(float x1, float y1, float x2, float y2, float x3, float
 }
 
 t_path *simple_path(void) {
-	/*t_path *path;*/
-	/**/
-	/*path = create_path();*/
-	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(200, 200)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88,
-	 * 314.159, 42.42, 8.590)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
+	t_path *path;
+	path = create_path();
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(200, 200)));
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88, 314.159, 42.42, 8.590)));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));
+	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));
+	path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));
+	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
+	return path;
+}
+
+t_path *simple_path2(void) {
 	t_path *path = create_path();
 	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 200)));
 	path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(150, 100, 200, 200)));
 	path = add_seg_to_path(path, create_segment(SEG_SMOOTH_QUADRATIC, create_point(300, 200)));
 	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(300, 300, 400, 300, 400, 200)));
-	/*path = add_seg_to_path(path, create_segment(SEG_SMOOTH_CUBIC, create_2_points(500, 100, 600, 200)));*/
-	path = add_seg_to_path(path, create_segment(SEG_SMOOTH_QUADRATIC, create_point(500, 100)));
-	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
+	path = add_seg_to_path(path, create_segment(SEG_SMOOTH_CUBIC, create_2_points(500, 100, 600, 200)));
+	path = add_seg_to_path(path, create_segment(SEG_SMOOTH_CUBIC, create_2_points(500, 100, 100, 500)));
+	path = add_seg_to_path(path,
+						   create_segment(SEG_SMOOTH_CUBIC, create_2_points(195.176, 392.0451, 429.0431, 17.0859716)));
+	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	return path;
-}
-
-// bresenham implementtion (TODO switch to WU line)
-void render_line(t_canim *canim, t_point p1, t_point p2) {
-	int x1 = (int)p1.x;
-	int y1 = (int)p1.y;
-	int x2 = (int)p2.x;
-	int y2 = (int)p2.y;
-
-	int dx = abs(x2 - x1);
-	int dy = abs(y2 - y1);
-
-	int sx = (x1 < x2) ? 1 : -1;
-	int sy = (y1 < y2) ? 1 : -1;
-
-	int err = dx - dy;
-
-	while (1) {
-		set_pixel(canim, x1, y1, 255, 255, 255);
-		if (x1 == x2 && y1 == y2)
-			break;
-		int e2 = 2 * err;
-		if (e2 > -dy) {
-			err -= dy;
-			x1 += sx;
-		}
-		if (e2 < dx) {
-			err += dx;
-			y1 += sy;
-		}
-	}
 }
 
 static t_point reflect_point(t_point ref, t_point anchor) {
@@ -164,13 +137,13 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		return;
 
 	void (*render_line_sel)(t_canim *canim, t_point p1, t_point p2);
-	render_line_sel = LINE_WU ? &render_line_wu : &render_line;
+	render_line_sel = LINE_WU ? &render_line_wu : &render_line_bresen;
 
 	t_point points[MAX_POINTS];
 	int		count = 0;
 	float	tol = 0.01f;
 
-	t_point anchor;	 // shared join point
+	t_point anchor;
 	if (segment->prev->type == SEG_CUBIC)
 		anchor = segment->prev->p[2];
 	else if (segment->prev->type == SEG_QUADRATIC || segment->prev->type == SEG_SMOOTH_CUBIC)
@@ -179,12 +152,9 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		anchor = segment->prev->p[0];
 
 	if (segment->type == SEG_CUBIC) {
-		// smooth quadratic → cubic
 		if (segment->prev->type == SEG_QUADRATIC) {
 			segment->p[0] = reflect_point(segment->prev->p[0], anchor);
-		}
-		// smooth cubic → cubic
-		else if (segment->prev->type == SEG_CUBIC) {
+		} else if (segment->prev->type == SEG_CUBIC) {
 			segment->p[0] = reflect_point(segment->prev->p[1], anchor);
 		}
 
@@ -288,10 +258,16 @@ void render_path(t_canim *canim) {
 		render_segment(canim, path, segment);
 		segment = segment->next;
 	}
-	/*path = create_circle((t_point){WIDTH / 2, HEIGHT / 2}, 200);*/
-	/*segment = path->head;*/
-	/*while (segment) {*/
-		/*render_segment(canim, path, segment);*/
-		/*segment = segment->next;*/
-	/*}*/
+	path = simple_path();
+	segment = path->head;
+	while (segment) {
+		render_segment(canim, path, segment);
+		segment = segment->next;
+	}
+	path = create_circle((t_point){WIDTH / 2, HEIGHT / 2}, 200);
+	segment = path->head;
+	while (segment) {
+		render_segment(canim, path, segment);
+		segment = segment->next;
+	}
 }

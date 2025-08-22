@@ -1,7 +1,5 @@
 #include "canim.h"
 
-// helper: plot pixel with brightness (0.0f = dark, 1.0f = full white)
-
 static void wu_plot(t_canim *canim, int x, int y, float brightness) {
 	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
 		return;
@@ -53,7 +51,6 @@ void render_line_wu(t_canim *canim, t_point p1, t_point p2) {
 	float dy = y1 - y0;
 	float gradient = dx == 0.0f ? 1.0f : dy / dx;
 
-	// first endpoint
 	int	  xend = (int)roundf(x0);
 	float yend = y0 + gradient * (xend - x0);
 	float xgap = rfpart(x0 + 0.5f);
@@ -70,7 +67,6 @@ void render_line_wu(t_canim *canim, t_point p1, t_point p2) {
 
 	float intery = yend + gradient;
 
-	// second endpoint
 	xend = (int)roundf(x1);
 	yend = y1 + gradient * (xend - x1);
 	xgap = fpart(x1 + 0.5f);
@@ -85,7 +81,6 @@ void render_line_wu(t_canim *canim, t_point p1, t_point p2) {
 		wu_plot(canim, xpxl2, ypxl2 + 1, fpart(yend) * xgap);
 	}
 
-	// main loop
 	if (steep) {
 		for (int x = xpxl1 + 1; x < xpxl2; x++) {
 			wu_plot(canim, (int)floorf(intery), x, rfpart(intery));
