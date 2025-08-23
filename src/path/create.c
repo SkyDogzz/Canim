@@ -65,6 +65,38 @@ t_point *create_point(float x, float y) {
 	return point;
 }
 
+t_point *create_points(int counter, ...) {
+	int		i = 0;
+	va_list parametersInfos;
+	va_start(parametersInfos, counter);
+
+	if (counter < 0 || counter > 3) {
+		printf("Cant create %d points\n", counter);
+		return NULL;
+	}
+	t_point *points = malloc(sizeof(t_point) * 3);
+	while (i < counter) {
+		points[i] = (t_point)va_arg(parametersInfos, t_point);
+		printf("%f %f\n", points[i].x, points[i].y);
+		i++;
+	}
+	va_end(parametersInfos);
+	return points;
+}
+
+t_point *create_pointss(int counter, t_point *array) {
+	if (counter < 0 || counter > 3) {
+		printf("Cant create %d points\n", counter);
+		return NULL;
+	}
+	t_point *points = malloc(sizeof(t_point) * counter);
+	if (!points)
+		return NULL;
+	for (int i = 0; i < counter; i++)
+		points[i] = array[i];
+	return points;
+}
+
 t_point *create_2_points(float x1, float y1, float x2, float y2) {
 	t_point *points = malloc(2 * sizeof(t_point));
 
@@ -94,19 +126,23 @@ t_point *create_3_points(float x1, float y1, float x2, float y2, float x3, float
 t_path *simple_path(void) {
 	t_path *path;
 	path = create_path();
-	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(200, 200)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88, 314.159, 42.42, 8.590)));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));
-	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));
-	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));
-	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));
-	path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));
-	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_points(1, (t_point){200, 200})));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{400, 400}})));
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_points(1, (t_point){400, 400})));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_points(1, (t_point){400, 400})));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88,
+	 * 314.159, 42.42, 8.590)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(100, 300)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));*/
 	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	return path;
 }
@@ -215,13 +251,6 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 			render_line_sel(canim, points[i], points[i + 1]);
 	}
 	(void)path;
-}
-
-void add_last_dlst(t_segment *head, t_segment *tail) {
-	while (head->next)
-		head = head->next;
-	head->next = tail;
-	tail->prev = head;
 }
 
 t_path *create_circle(t_point c, float r) {
