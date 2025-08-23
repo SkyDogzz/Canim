@@ -27,18 +27,16 @@ t_segment *create_segment(t_segtype segtype, t_point *points) {
 }
 
 t_path *add_seg_to_path(t_path *path, t_segment *segment) {
-	t_segment *cursor;
-
 	if (!path || !segment)
-		return (NULL);
-	if (!path->head)
+		return NULL;
+
+	if (!path->head) {
 		path->head = segment;
-	else {
-		cursor = path->head;
-		while (cursor->next)
-			cursor = cursor->next;
-		cursor->next = segment;
-		segment->prev = cursor;
+		path->tail = segment;
+	} else {
+		path->tail->next = segment;
+		segment->prev = path->tail;
+		path->tail = segment;
 	}
 	return path;
 }
@@ -51,6 +49,8 @@ t_path *create_path(void) {
 		return (NULL);
 	path->closed = 0;
 	path->head = NULL;
+	path->stroke = 0xFFFFFF;
+	path->stroke_width = 1;
 	return path;
 }
 
@@ -126,8 +126,8 @@ t_point *create_3_points(float x1, float y1, float x2, float y2, float x3, float
 t_path *simple_path(void) {
 	t_path *path;
 	path = create_path();
-	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_points(1, (t_point){200, 200})));
-	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{400, 400}})));
+	/*pat h = add_seg_to_path(path, create_segment(SEG_MOVETO, create_points(1, (t_point){200, 200})));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{400, 400}})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_points(1, (t_point){400, 400})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_points(1, (t_point){400, 400})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));*/
@@ -143,6 +143,10 @@ t_path *simple_path(void) {
 	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_pointss(1, (t_point[]){{150, 5}})));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{75, 200}})));
+	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{225, 200}})));
 	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	return path;
 }
@@ -277,26 +281,68 @@ t_path *create_circle(t_point c, float r) {
 	return path;
 }
 
-void render_path(t_canim *canim) {
-	t_path	  *path;
-	t_segment *segment;
+/*void render_path(t_canim *canim) {*/
+/*	t_path	  *path;*/
+/*	t_segment *segment;*/
+/**/
+/*	path = simple_path();*/
+/*	segment = path->head;*/
+/*	while (segment) {*/
+/*		render_segment(canim, path, segment);*/
+/*		segment = segment->next;*/
+/*	}*/
+/*path = simple_path2();*/
+/*segment = path->head;*/
+/*while (segment) {*/
+/*	render_segment(canim, path, segment);*/
+/*	segment = segment->next;*/
+/*}*/
+/*path = create_circle((t_point){WIDTH / 2, HEIGHT / 2}, 200);*/
+/*segment = path->head;*/
+/*while (segment) {*/
+/*	render_segment(canim, path, segment);*/
+/*	segment = segment->next;*/
+/*}*/
+/*}*/
 
-	path = simple_path();
-	segment = path->head;
-	while (segment) {
-		render_segment(canim, path, segment);
-		segment = segment->next;
-	}
-	path = simple_path();
-	segment = path->head;
-	while (segment) {
-		render_segment(canim, path, segment);
-		segment = segment->next;
-	}
-	path = create_circle((t_point){WIDTH / 2, HEIGHT / 2}, 200);
-	segment = path->head;
-	while (segment) {
-		render_segment(canim, path, segment);
-		segment = segment->next;
+t_shape *create_shape(t_path *path) {
+	t_shape *shape = malloc(sizeof(t_shape));
+	if (!shape)
+		return NULL;
+	shape->next = NULL;
+	shape->path = path;
+	return shape;
+}
+
+t_shape *add_shape(t_shape *head, t_shape *new) {
+	t_shape *mem = head;
+	if (!head)
+		return new;
+	while (head->next)
+		head = head->next;
+	head->next = new;
+	return mem;
+}
+
+void render_path(t_canim *canim) {
+	/*t_shape *shape = malloc(sizeof(t_shape));*/
+
+	/*shape->path = simple_path();*/
+	/*shape->next = NULL;*/
+
+	t_shape *shape = NULL;
+	shape = add_shape(shape, create_shape(simple_path()));
+	shape = add_shape(shape, create_shape(simple_path2()));
+	shape = add_shape(shape, create_shape(simple_path2()));
+	shape = add_shape(shape, create_shape(create_circle((t_point){(float)WIDTH / 2, (float)HEIGHT / 2}, 200)));
+
+	while (shape) {
+		t_path	  *path = shape->path;
+		t_segment *segment = path->head;
+		while (segment) {
+			render_segment(canim, path, segment);
+			segment = segment->next;
+		}
+		shape = shape->next;
 	}
 }
