@@ -85,6 +85,7 @@ typedef struct s_path {
 	int		   stroke_width;
 	uint8_t	   stroke_opacity;
 	bool	   closed;
+	t_point	   offset;
 	t_animate *animation;
 } t_path;
 
@@ -93,21 +94,11 @@ typedef struct s_shape {
 	struct s_shape *next;
 } t_shape;
 
-typedef enum e_animtype {
-	CREATE,
-} t_animtype;
+typedef enum e_animtype { CREATE, TRANSLATE } t_animtype;
 
-typedef enum e_animtiming {
-	LINEAR,
-	EASE_IN,
-	EASE_OUT,
-	EASE_IN_OUT
-} t_animtiming;
+typedef enum e_animtiming { LINEAR, EASE_IN, EASE_OUT, EASE_IN_OUT } t_animtiming;
 
-typedef enum e_animrepeat {
-	ONCE,
-	INFINITE
-} t_animrepeat;
+typedef enum e_animrepeat { ONCE, INFINITE } t_animrepeat;
 
 typedef struct s_animate {
 	t_animtype		  type;
@@ -115,6 +106,8 @@ typedef struct s_animate {
 	double			  duration;
 	t_animtiming	  timing;
 	t_animrepeat	  repeat;
+	t_point			  from;
+	t_point			  to;
 	struct s_animate *next;
 } t_animate;
 
@@ -135,6 +128,8 @@ t_rgba colora_from_all(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 t_rgba colora_from_color(t_rgb color, uint8_t a);
 
 t_animate *create_animation(t_animtype type, double start, double duration, double timing, t_animrepeat repeat);
+t_animate *create_translate(t_animtype type, double start, double duration, double timing, t_animrepeat repeat,
+							t_point p1, t_point p2);
 t_animate *add_animation(t_animate *head, t_animate *new);
 
 #endif

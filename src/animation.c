@@ -6,9 +6,25 @@ t_animate *create_animation(t_animtype type, double start, double duration, doub
 		return NULL;
 	animation->type = type;
 	animation->start = start;
-	animation->duration = duration;
+	animation->duration = duration * 2;
 	animation->timing = timing;
 	animation->repeat = repeat;
+	animation->next = NULL;
+	return animation;
+}
+
+t_animate *create_translate(t_animtype type, double start, double duration, double timing, t_animrepeat repeat,
+							t_point p1, t_point p2) {
+	t_animate *animation = malloc(sizeof(t_animate));
+	if (!animation)
+		return NULL;
+	animation->type = type;
+	animation->start = start;
+	animation->duration = duration * 2;
+	animation->timing = timing;
+	animation->repeat = repeat;
+	animation->from = p1;
+	animation->to = p2;
 	animation->next = NULL;
 	return animation;
 }
