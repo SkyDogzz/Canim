@@ -375,49 +375,103 @@ void render_path(t_canim *canim, t_path *path, float progress) {
 	}
 }
 
-static float compute_progress(t_canim *canim, t_animate *anim) {
+static float compute_progress(t_animate *anim) {
 	double now = glfwGetTime();
 
 	if (!anim)
 		return 1;
+
 	double elapsed = now - anim->start;
+
 	while (anim) {
 		if (anim->type == CREATE) {
+			double progress;
+			if (anim->repeat == ONCE) {
+				progress = elapsed / anim->duration;
+			} else if (anim->repeat == INFINITE) {
+				double cycle = anim->duration;
+				double pos = fmod(elapsed, cycle);
+				progress = pos / anim->duration;
+			} else {
+				progress = 1;
+			}
+			if (progress < 0)
+				progress = 0;
+			if (progress > 1)
+				progress = 1;
 			if (anim->timing == LINEAR) {
-				if (anim->repeat == ONCE) {
-					return elapsed / anim->duration;
-				} else if (anim->repeat == INFINITE) {
-					double cycle = anim->duration;
-					double pos = fmod(elapsed, cycle);
-					return pos / anim->duration;
+				return progress;
+			} else if (anim->timing == EASE_IN) {
+				return progress * progress;
+			} else if (anim->timing == EASE_OUT) {
+				return 1 - (1 - progress) * (1 - progress);
+			} else if (anim->timing == EASE_IN_OUT) {
+				if (progress < 0.5) {
+					return 2 * progress * progress;
+				} else {
+					return 1 - pow(-2 * progress + 2, 2) / 2;
 				}
 			}
 		}
 		anim = anim->next;
 	}
+
 	return 1;
-	(void)canim;
 }
+
+/*void render_shapes(t_canim *canim) {*/
+/*	t_shape *shape = NULL;*/
+/*	shape = add_shape(shape, create_shape(simple_path()));*/
+/*	shape = add_shape(shape, create_shape(simple_path2()));*/
+/*	shape->next->path->animation =*/
+/*		add_animation(shape->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));*/
+/*	shape->next->path->stroke_width = 1;*/
+/*	shape = add_shape(shape, create_shape(create_circle((t_point){(float)WIDTH / 2, (float)HEIGHT / 2}, 200)));*/
+/*	shape->next->next->path->animation =*/
+/*		add_animation(shape->next->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));*/
+/*	t_shape *s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 - 100, (float)HEIGHT / 2 - 100}, 200));*/
+/*	s2->path->stroke = color_from_hex(0xff);*/
+/*	s2->path->stroke_opacity = 125;*/
+/*	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, LINEAR, INFINITE));*/
+/*	shape = add_shape(shape, s2);*/
+/**/
+/*	while (shape) {*/
+/*		t_path *path = shape->path;*/
+/*		float	progress = compute_progress(path->animation);*/
+/*		render_path(canim, path, progress);*/
+/*		shape = shape->next;*/
+/*	}*/
+/*}*/
 
 void render_shapes(t_canim *canim) {
 	t_shape *shape = NULL;
-	shape = add_shape(shape, create_shape(simple_path()));
-	shape = add_shape(shape, create_shape(simple_path2()));
-	shape->next->path->animation =
-		add_animation(shape->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));
-	shape->next->path->stroke_width = 1;
-	shape = add_shape(shape, create_shape(create_circle((t_point){(float)WIDTH / 2, (float)HEIGHT / 2}, 200)));
-	shape->next->next->path->animation =
-		add_animation(shape->next->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));
-	t_shape *s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 - 100, (float)HEIGHT / 2 - 100}, 200));
-	s2->path->stroke = color_from_hex(0xff);
-	s2->path->stroke_opacity = 125;
+	t_shape *s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 - 225, (float)HEIGHT / 2}, 200));
+	s2->path->stroke = color_from_hex(0xffff);
+	/*s2->path->stroke_opacity = 125;*/
 	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, LINEAR, INFINITE));
+	shape = add_shape(shape, s2);
+
+	s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 - 75, (float)HEIGHT / 2}, 200));
+	s2->path->stroke = color_from_hex(0xff00ff);
+	/*s2->path->stroke_opacity = 125;*/
+	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, EASE_IN, INFINITE));
+	shape = add_shape(shape, s2);
+
+	s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 + 75, (float)HEIGHT / 2}, 200));
+	s2->path->stroke = color_from_hex(0xffff00);
+	/*s2->path->stroke_opacity = 125;*/
+	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, EASE_OUT, INFINITE));
+	shape = add_shape(shape, s2);
+
+	s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 + 225, (float)HEIGHT / 2}, 200));
+	s2->path->stroke = color_from_hex(0xffffff);
+	/*s2->path->stroke_opacity = 125;*/
+	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, EASE_IN_OUT, INFINITE));
 	shape = add_shape(shape, s2);
 
 	while (shape) {
 		t_path *path = shape->path;
-		float	progress = compute_progress(canim, path->animation);
+		float	progress = compute_progress(path->animation);
 		render_path(canim, path, progress);
 		shape = shape->next;
 	}

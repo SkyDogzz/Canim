@@ -99,6 +99,9 @@ typedef enum e_animtype {
 
 typedef enum e_animtiming {
 	LINEAR,
+	EASE_IN,
+	EASE_OUT,
+	EASE_IN_OUT
 } t_animtiming;
 
 typedef enum e_animrepeat {
