@@ -22,7 +22,8 @@ SRC := main.c \
 	   utils/color.c \
 	   math/adaptive.c \
 	   math/bresenham.c \
-	   math/xiolinwu.c
+	   math/xiolinwu.c \
+	   animation.c
 
 SRCS := $(addprefix $(SRC_PATH), $(SRC))
 OBJS := $(addprefix $(OBJ_PATH), $(SRC:.c=.o))

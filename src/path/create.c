@@ -54,6 +54,7 @@ t_path *create_path(void) {
 	path->stroke.b = 255;
 	path->stroke_width = 1;
 	path->stroke_opacity = 255;
+	path->animation = NULL;
 	return path;
 }
 
@@ -129,13 +130,13 @@ t_point *create_3_points(float x1, float y1, float x2, float y2, float x3, float
 t_path *simple_path(void) {
 	t_path *path;
 	path = create_path();
-	/*pat h = add_seg_to_path(path, create_segment(SEG_MOVETO, create_points(1, (t_point){200, 200})));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_points(1, (t_point){200, 200})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{400, 400}})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_points(1, (t_point){400, 400})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_points(1, (t_point){400, 400})));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 200, 400, 100)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88,
-	 * 314.159, 42.42, 8.590)));*/
+	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(162, 14, 204.88,*/
+	/*314.159, 42.42, 8.590)));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(300, 200)));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(12, 55.6, 225, 450, 111, 512)));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(100, 100)));*/
@@ -143,10 +144,10 @@ t_path *simple_path(void) {
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 300)));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
 	/*path = add_seg_to_path(path, create_segment(SEG_LINETO, create_point(200, 0)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));*/
-	/*path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));*/
+	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(0, 400)));
+	path = add_seg_to_path(path, create_segment(SEG_QUADRATIC, create_2_points(0, 0, 400, 0)));
+	path = add_seg_to_path(path, create_segment(SEG_CUBIC, create_3_points(100, 100, 400, 300, 600, 400)));
+	path = add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	path = add_seg_to_path(path, create_segment(SEG_MOVETO, create_pointss(1, (t_point[]){{150, 5}})));
 	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{75, 200}})));
 	path = add_seg_to_path(path, create_segment(SEG_LINETO, create_pointss(1, (t_point[]){{225, 200}})));
@@ -304,24 +305,120 @@ t_shape *add_shape(t_shape *head, t_shape *new) {
 	return mem;
 }
 
-void render_path(t_canim *canim) {
+void render_path(t_canim *canim, t_path *path, float progress) {
+	// clamp progress [0,1]
+	if (progress < 0)
+		progress = 0;
+	if (progress > 1)
+		progress = 1;
+
+	// choose line renderer
+	void (*render_line_sel)(t_canim *, t_path *, t_point, t_point);
+	render_line_sel = LINE_WU ? &render_line_wu : &render_line_bresen;
+
+	// 1. collect all points into a dynamic buffer
+	t_point points[10000];	// or malloc if you prefer
+	int		count = 0;
+
+	t_segment *seg = path->head;
+	while (seg) {
+		if (seg->prev) {
+			t_point anchor;
+			if (seg->prev->type == SEG_CUBIC)
+				anchor = seg->prev->p[2];
+			else if (seg->prev->type == SEG_QUADRATIC || seg->prev->type == SEG_SMOOTH_CUBIC)
+				anchor = seg->prev->p[1];
+			else
+				anchor = seg->prev->p[0];
+
+			if (seg->type == SEG_CUBIC) {
+				points[count++] = anchor;
+				cubic_adaptive(anchor, seg->p[0], seg->p[1], seg->p[2], 0.01f, points, &count);
+			} else if (seg->type == SEG_QUADRATIC) {
+				points[count++] = anchor;
+				quadratic_adaptive(anchor, seg->p[0], seg->p[1], 0.01f, points, &count);
+			} else if (seg->type == SEG_LINETO) {
+				points[count++] = anchor;
+				points[count++] = seg->p[0];
+			} else if (seg->type == SEG_CLOSE) {
+				// connect back to moveto
+				t_segment *cursor = seg;
+				while (cursor->prev && cursor->type != SEG_MOVETO)
+					cursor = cursor->prev;
+				points[count++] = anchor;
+				points[count++] = cursor->p[0];
+			}
+			// smooth types would flatten similarly...
+		}
+		seg = seg->next;
+	}
+
+	if (count < 2)
+		return;
+
+	int	  total_lines = count - 1;
+	float progress_lines = progress * total_lines;
+	int	  full = (int)progress_lines;
+	float frac = progress_lines - full;
+
+	// draw fully completed lines
+	for (int i = 0; i < full; i++) {
+		render_line_sel(canim, path, points[i], points[i + 1]);
+	}
+
+	// draw partial of the next line
+	if (full < total_lines) {
+		t_point a = points[full];
+		t_point b = points[full + 1];
+		t_point mid = {a.x + (b.x - a.x) * frac, a.y + (b.y - a.y) * frac};
+		render_line_sel(canim, path, a, mid);
+	}
+}
+
+static float compute_progress(t_canim *canim, t_animate *anim) {
+	double now = glfwGetTime();
+
+	if (!anim)
+		return 1;
+	double elapsed = now - anim->start;
+	while (anim) {
+		if (anim->type == CREATE) {
+			if (anim->timing == LINEAR) {
+				if (anim->repeat == ONCE) {
+					return elapsed / anim->duration;
+				} else if (anim->repeat == INFINITE) {
+					double cycle = anim->duration;
+					double pos = fmod(elapsed, cycle);
+					return pos / anim->duration;
+				}
+			}
+		}
+		anim = anim->next;
+	}
+	return 1;
+	(void)canim;
+}
+
+void render_shapes(t_canim *canim) {
 	t_shape *shape = NULL;
 	shape = add_shape(shape, create_shape(simple_path()));
 	shape = add_shape(shape, create_shape(simple_path2()));
+	shape->next->path->animation =
+		add_animation(shape->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));
 	shape->next->path->stroke_width = 1;
 	shape = add_shape(shape, create_shape(create_circle((t_point){(float)WIDTH / 2, (float)HEIGHT / 2}, 200)));
-	t_shape *s2 = create_shape(create_circle((t_point) {(float) WIDTH / 2 + 10, (float) HEIGHT / 2 + 10}, 200));
+	shape->next->next->path->animation =
+		add_animation(shape->next->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));
+	t_shape *s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 - 100, (float)HEIGHT / 2 - 100}, 200));
 	s2->path->stroke = color_from_hex(0xff);
 	s2->path->stroke_opacity = 125;
+	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, LINEAR, INFINITE));
 	shape = add_shape(shape, s2);
 
 	while (shape) {
-		t_path	  *path = shape->path;
-		t_segment *segment = path->head;
-		while (segment) {
-			render_segment(canim, path, segment);
-			segment = segment->next;
-		}
+		t_path *path = shape->path;
+		float	progress = compute_progress(canim, path->animation);
+		render_path(canim, path, progress);
 		shape = shape->next;
 	}
 }

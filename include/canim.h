@@ -77,6 +77,7 @@ typedef struct s_segment {
 	struct s_segment *next;
 } t_segment;
 
+typedef struct s_animate t_animate;
 typedef struct s_path {
 	t_segment *head;
 	t_segment *tail;
@@ -84,6 +85,7 @@ typedef struct s_path {
 	int		   stroke_width;
 	uint8_t	   stroke_opacity;
 	bool	   closed;
+	t_animate *animation;
 } t_path;
 
 typedef struct s_shape {
@@ -91,9 +93,31 @@ typedef struct s_shape {
 	struct s_shape *next;
 } t_shape;
 
+typedef enum e_animtype {
+	CREATE,
+} t_animtype;
+
+typedef enum e_animtiming {
+	LINEAR,
+} t_animtiming;
+
+typedef enum e_animrepeat {
+	ONCE,
+	INFINITE
+} t_animrepeat;
+
+typedef struct s_animate {
+	t_animtype		  type;
+	double			  start;
+	double			  duration;
+	t_animtiming	  timing;
+	t_animrepeat	  repeat;
+	struct s_animate *next;
+} t_animate;
+
 void mainloop(t_canim *canim);
 void set_pixel(t_canim *canim, t_point co, t_rgba colora);
-void render_path(t_canim *canim);
+void render_shapes(t_canim *canim);
 
 void quadratic_adaptive(t_point p, t_point q, t_point r, float tol, t_point *points, int *count);
 void cubic_adaptive(t_point p1, t_point p2, t_point p3, t_point p4, float tol, t_point *points, int *count);
@@ -106,5 +130,8 @@ t_rgb  color_from_all(uint8_t r, uint8_t g, uint8_t b);
 t_rgba colora_from_hex(int hex);
 t_rgba colora_from_all(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 t_rgba colora_from_color(t_rgb color, uint8_t a);
+
+t_animate *create_animation(t_animtype type, double start, double duration, double timing, t_animrepeat repeat);
+t_animate *add_animation(t_animate *head, t_animate *new);
 
 #endif

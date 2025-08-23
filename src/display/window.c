@@ -32,7 +32,7 @@ void *init_window(const int width, const int height, const char *title) {
 		return NULL;
 	}
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, key_callback);
 	return window;
 }
@@ -53,9 +53,9 @@ void mainloop(t_canim *canim) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	while (!glfwWindowShouldClose(canim->window)) {
-		memset(canim->pixels, 0, WIDTH * HEIGHT * 3);
+		memset(canim->pixels, 0, WIDTH * HEIGHT * 4);
 		glClear(GL_COLOR_BUFFER_BIT);
-		render_path(canim);
+		render_shapes(canim);
 
 		glBindTexture(GL_TEXTURE_2D, canim->tex);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, canim->pixels);
