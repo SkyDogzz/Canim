@@ -21,7 +21,7 @@ static float fpart(float x) {
 	return x - floorf(x);
 }
 
-void render_line_wu(t_canim *canim, t_point p1, t_point p2) {
+void render_line_wu(t_canim *canim, t_path *path, t_point p1, t_point p2) {
 	float x0 = p1.x, y0 = p1.y;
 	float x1 = p2.x, y1 = p2.y;
 
@@ -94,4 +94,5 @@ void render_line_wu(t_canim *canim, t_point p1, t_point p2) {
 			intery += gradient;
 		}
 	}
+	(void) path;
 }

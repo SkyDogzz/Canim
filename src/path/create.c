@@ -49,7 +49,9 @@ t_path *create_path(void) {
 		return (NULL);
 	path->closed = 0;
 	path->head = NULL;
-	path->stroke = 0xFFFFFF;
+	path->stroke.r = 255;
+	path->stroke.g = 255;
+	path->stroke.b = 255;
 	path->stroke_width = 1;
 	return path;
 }
@@ -176,7 +178,7 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 	if (!segment->prev)
 		return;
 
-	void (*render_line_sel)(t_canim *canim, t_point p1, t_point p2);
+	void (*render_line_sel)(t_canim *canim, t_path *path, t_point p1, t_point p2);
 	render_line_sel = LINE_WU ? &render_line_wu : &render_line_bresen;
 
 	t_point points[MAX_POINTS];
@@ -201,7 +203,7 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		points[count++] = anchor;
 		cubic_adaptive(anchor, segment->p[0], segment->p[1], segment->p[2], tol, points, &count);
 		for (int i = 0; i < count - 1; i++)
-			render_line_sel(canim, points[i], points[i + 1]);
+			render_line_sel(canim, path, points[i], points[i + 1]);
 
 	} else if (segment->type == SEG_QUADRATIC) {
 		if (segment->prev->type == SEG_CUBIC) {
@@ -213,10 +215,10 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		points[count++] = anchor;
 		quadratic_adaptive(anchor, segment->p[0], segment->p[1], tol, points, &count);
 		for (int i = 0; i < count - 1; i++)
-			render_line_sel(canim, points[i], points[i + 1]);
+			render_line_sel(canim, path, points[i], points[i + 1]);
 
 	} else if (segment->type == SEG_LINETO) {
-		render_line_sel(canim, anchor, segment->p[0]);
+		render_line_sel(canim, path, anchor, segment->p[0]);
 
 	} else if (segment->type == SEG_CLOSE) {
 		t_segment *cursor = segment;
@@ -226,7 +228,7 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 			cursor = cursor->prev;
 		}
 		segment->p[0] = cursor->p[0];
-		render_line_sel(canim, anchor, segment->p[0]);
+		render_line_sel(canim, path, anchor, segment->p[0]);
 	} else if (segment->type == SEG_SMOOTH_QUADRATIC) {
 		t_point ctrl;
 		if (segment->prev->type == SEG_QUADRATIC || segment->prev->type == SEG_SMOOTH_QUADRATIC)
@@ -238,7 +240,7 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		points[count++] = anchor;
 		quadratic_adaptive(anchor, ctrl, segment->p[0], tol, points, &count);
 		for (int i = 0; i < count - 1; i++)
-			render_line_sel(canim, points[i], points[i + 1]);
+			render_line_sel(canim, path, points[i], points[i + 1]);
 	} else if (segment->type == SEG_SMOOTH_CUBIC) {
 		t_point ctrl1;
 		if (segment->prev->type == SEG_CUBIC || segment->prev->type == SEG_SMOOTH_CUBIC)
@@ -252,7 +254,7 @@ void render_segment(t_canim *canim, t_path *path, t_segment *segment) {
 		points[count++] = anchor;
 		cubic_adaptive(anchor, ctrl1, ctrl2, end, tol, points, &count);
 		for (int i = 0; i < count - 1; i++)
-			render_line_sel(canim, points[i], points[i + 1]);
+			render_line_sel(canim, path, points[i], points[i + 1]);
 	}
 	(void)path;
 }
@@ -277,6 +279,10 @@ t_path *create_circle(t_point c, float r) {
 		add_seg_to_path(path, create_segment(SEG_CUBIC, pts));
 	}
 	add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
+	path->stroke_width = 10;
+	path->stroke.r = 255;
+	path->stroke.g = 0;
+	path->stroke.b = 0;
 
 	return path;
 }

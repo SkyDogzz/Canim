@@ -27,11 +27,18 @@
 #define MAX_POINTS 1000
 
 #define LINE_WU false
+#define DISK_BRUSH true
 
 typedef struct s_point {
 	float x;
 	float y;
 } t_point;
+
+typedef struct s_rgb {
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+} t_rgb;
 
 typedef struct s_canim {
 	GLFWwindow	 *window;
@@ -66,8 +73,15 @@ typedef struct s_segment {
 typedef struct s_path {
 	t_segment *head;
 	t_segment *tail;
+	t_rgb	   stroke;
+	int		   stroke_width;
 	bool	   closed;
 } t_path;
+
+typedef struct s_shape {
+	t_path		   *path;
+	struct s_shape *next;
+} t_shape;
 
 void mainloop(t_canim *canim);
 void set_pixel(t_canim *canim, int x, int y, unsigned char r, unsigned char g, unsigned char b);
@@ -76,7 +90,7 @@ void render_path(t_canim *canim);
 void quadratic_adaptive(t_point p, t_point q, t_point r, float tol, t_point *points, int *count);
 void cubic_adaptive(t_point p1, t_point p2, t_point p3, t_point p4, float tol, t_point *points, int *count);
 
-void render_line_bresen(t_canim *canim, t_point p1, t_point p2);
-void render_line_wu(t_canim *canim, t_point p1, t_point p2);
+void render_line_bresen(t_canim *canim, t_path *path, t_point p1, t_point p2);
+void render_line_wu(t_canim *canim, t_path *path, t_point p1, t_point p2);
 
 #endif
