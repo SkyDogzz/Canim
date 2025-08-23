@@ -421,78 +421,59 @@ static float compute_progress(t_animate *anim) {
 }
 
 t_point compute_offset(t_animate *anim) {
-	double now = glfwGetTime();
+    if (!anim)
+        return (t_point){0, 0};
 
-	if (!anim)
-		return (t_point){0, 0};
+    double now = glfwGetTime();
 
-	double elapsed = now - anim->start;
+    if (now < anim->start)
+        return (t_point){0, 0};
 
-	while (anim) {
-		if (anim->type == TRANSLATE) {
-			double progress;
-			if (anim->repeat == ONCE) {
-				progress = elapsed / anim->duration;
-			} else if (anim->repeat == INFINITE) {
-				double cycle = anim->duration;
-				double pos = fmod(elapsed, cycle);
-				progress = pos / anim->duration;
-			} else {
-				progress = 1;
-			}
+    double elapsed = now - anim->start;
 
-			// clamp [0,1]
-			if (progress < 0)
-				progress = 0;
-			if (progress > 1)
-				progress = 1;
+    double total_duration = 0;
+    t_animate *tmp = anim;
+    while (tmp) {
+        if (tmp->type == TRANSLATE)
+            total_duration += tmp->duration;
+        tmp = tmp->next;
+    }
 
-			if (anim->timing == EASE_IN) {
-				progress = progress * progress;
-			} else if (anim->timing == EASE_OUT) {
-				progress = 1 - (1 - progress) * (1 - progress);
-			} else if (anim->timing == EASE_IN_OUT) {
-				if (progress < 0.5)
-					progress = 2 * progress * progress;
-				else
-					progress = 1 - pow(-2 * progress + 2, 2) / 2;
-			}
-			// LINEAR = rien à changer
+    if (anim->repeat == INFINITE && total_duration > 0) {
+        elapsed = fmod(elapsed, total_duration);
+    }
 
-			// interpolation entre from → to
-			t_point result;
-			result.x = anim->from.x + (anim->to.x - anim->from.x) * progress;
-			result.y = anim->from.y + (anim->to.y - anim->from.y) * progress;
-			return result;
-		}
-		anim = anim->next;
-	}
-	return (t_point){0, 0};
+    t_point current = {0, 0};
+    tmp = anim;
+
+    while (tmp) {
+        if (tmp->type == TRANSLATE) {
+            if (elapsed < tmp->duration) {
+                double progress = elapsed / tmp->duration;
+                if (tmp->timing == EASE_IN) {
+                    progress = progress * progress;
+                } else if (tmp->timing == EASE_OUT) {
+                    progress = 1 - (1 - progress) * (1 - progress);
+                } else if (tmp->timing == EASE_IN_OUT) {
+                    if (progress < 0.5)
+                        progress = 2 * progress * progress;
+                    else
+                        progress = 1 - pow(-2 * progress + 2, 2) / 2;
+                }
+                current.x += tmp->from.x + (tmp->to.x - tmp->from.x) * progress;
+                current.y += tmp->from.y + (tmp->to.y - tmp->from.y) * progress;
+                return current;
+            } else {
+                current.x += tmp->to.x;
+                current.y += tmp->to.y;
+                elapsed -= tmp->duration;
+            }
+        }
+        tmp = tmp->next;
+    }
+
+    return current;
 }
-
-/*void render_shapes(t_canim *canim) {*/
-/*	t_shape *shape = NULL;*/
-/*	shape = add_shape(shape, create_shape(simple_path()));*/
-/*	shape = add_shape(shape, create_shape(simple_path2()));*/
-/*	shape->next->path->animation =*/
-/*		add_animation(shape->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));*/
-/*	shape->next->path->stroke_width = 1;*/
-/*	shape = add_shape(shape, create_shape(create_circle((t_point){(float)WIDTH / 2, (float)HEIGHT / 2}, 200)));*/
-/*	shape->next->next->path->animation =*/
-/*		add_animation(shape->next->next->path->animation, create_animation(CREATE, 1, 1, LINEAR, ONCE));*/
-/*	t_shape *s2 = create_shape(create_circle((t_point){(float)WIDTH / 2 - 100, (float)HEIGHT / 2 - 100}, 200));*/
-/*	s2->path->stroke = color_from_hex(0xff);*/
-/*	s2->path->stroke_opacity = 125;*/
-/*	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, LINEAR, INFINITE));*/
-/*	shape = add_shape(shape, s2);*/
-/**/
-/*	while (shape) {*/
-/*		t_path *path = shape->path;*/
-/*		float	progress = compute_progress(path->animation);*/
-/*		render_path(canim, path, progress);*/
-/*		shape = shape->next;*/
-/*	}*/
-/*}*/
 
 void render_shapes(t_canim *canim) {
 	t_shape *shape = NULL;
@@ -534,21 +515,27 @@ void render_shapes(t_canim *canim) {
 																			  (t_point){0, 0}, (t_point){1280, 0}));
 	shape = add_shape(shape, s2);
 
-	s2 = create_shape(create_circle((t_point){0, (float)HEIGHT / 2 + 75}, 0));
-	s2->path->stroke_width = 100;
+	s2 = create_shape(create_circle((t_point){0, (float)HEIGHT / 2 + 75}, 50));
+	s2->path->stroke_width = 10;
 	s2->path->stroke = color_from_hex(0xff00);
 	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 1, EASE_OUT, INFINITE,																  (t_point){0, 0}, (t_point){1280, 0}));
+	s2->path->animation = add_animation(s2->path->animation, create_animation(CREATE, 1.5, 1, EASE_OUT, INFINITE));
 	shape = add_shape(shape, s2);
 
-	s2 = create_shape(create_circle((t_point){0, (float)HEIGHT / 2 + 225}, 0));
-	s2->path->stroke_width = 100;
+	s2 = create_shape(create_circle((t_point){0, (float)HEIGHT / 2 + 225}, 100));
+	s2->path->stroke_width = 10;
 	s2->path->stroke = color_from_hex(0xff0000);
-	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 1, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){1280, 0}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){1280, 0}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){-1280, 0}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){0, 100}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){WIDTH / 4, -HEIGHT}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){WIDTH / 4, HEIGHT}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){WIDTH / 4, -HEIGHT}));
+	s2->path->animation = add_animation(s2->path->animation, create_translate(TRANSLATE, 1.5, 0.3, EASE_IN_OUT, INFINITE,																  (t_point){0, 0}, (t_point){WIDTH / 4, HEIGHT}));
 	shape = add_shape(shape, s2);
 	while (shape) {
 		t_path *path = shape->path;
 		float	progress = compute_progress(path->animation);
-		/*path->offset = compute_offset(path->animation);*/
 		render_path(canim, path, progress);
 		shape = shape->next;
 	}
