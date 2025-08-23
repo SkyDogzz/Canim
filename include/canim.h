@@ -50,7 +50,7 @@ typedef struct s_rgba {
 typedef struct s_canim {
 	GLFWwindow	 *window;
 	GLuint		  tex;
-	unsigned char pixels[WIDTH * HEIGHT * 3];
+	unsigned char pixels[WIDTH * HEIGHT * 4];
 	size_t		  frame;
 	double		  start_time;
 	double		  last_frame;
@@ -82,6 +82,7 @@ typedef struct s_path {
 	t_segment *tail;
 	t_rgb	   stroke;
 	int		   stroke_width;
+	uint8_t	   stroke_opacity;
 	bool	   closed;
 } t_path;
 
@@ -91,7 +92,7 @@ typedef struct s_shape {
 } t_shape;
 
 void mainloop(t_canim *canim);
-void set_pixel(t_canim *canim, int x, int y, unsigned char r, unsigned char g, unsigned char b);
+void set_pixel(t_canim *canim, t_point co, t_rgba colora);
 void render_path(t_canim *canim);
 
 void quadratic_adaptive(t_point p, t_point q, t_point r, float tol, t_point *points, int *count);
@@ -100,8 +101,8 @@ void cubic_adaptive(t_point p1, t_point p2, t_point p3, t_point p4, float tol, t
 void render_line_bresen(t_canim *canim, t_path *path, t_point p1, t_point p2);
 void render_line_wu(t_canim *canim, t_path *path, t_point p1, t_point p2);
 
-t_rgb color_from_hex(int hex);
-t_rgb color_from_all(uint8_t r, uint8_t g, uint8_t b);
+t_rgb  color_from_hex(int hex);
+t_rgb  color_from_all(uint8_t r, uint8_t g, uint8_t b);
 t_rgba colora_from_hex(int hex);
 t_rgba colora_from_all(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 t_rgba colora_from_color(t_rgb color, uint8_t a);

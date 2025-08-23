@@ -1,12 +1,13 @@
 #include "canim.h"
 
-void set_pixel(t_canim *canim, int x, int y, unsigned char r, unsigned char g, unsigned char b) {
-	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+void set_pixel(t_canim *canim, t_point co, t_rgba colora) {
+	if (co.x < 0 || co.x >= WIDTH || co.y < 0 || co.y >= HEIGHT)
 		return;
-	int idx = (y * WIDTH + x) * 3;
-	canim->pixels[idx + 0] = r;
-	canim->pixels[idx + 1] = g;
-	canim->pixels[idx + 2] = b;
+	int idx = (co.y * WIDTH + co.x) * 4;
+	canim->pixels[idx + 0] = colora.r;
+	canim->pixels[idx + 1] = colora.g;
+	canim->pixels[idx + 2] = colora.b;
+	canim->pixels[idx + 3] = colora.a;
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -40,12 +41,16 @@ void mainloop(t_canim *canim) {
 	canim->window = init_window(WIDTH, HEIGHT, "Display");
 	if (!canim->window)
 		return;
+
 	glGenTextures(1, &canim->tex);
 	glBindTexture(GL_TEXTURE_2D, canim->tex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, canim->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, canim->pixels);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	while (!glfwWindowShouldClose(canim->window)) {
 		memset(canim->pixels, 0, WIDTH * HEIGHT * 3);
@@ -53,7 +58,7 @@ void mainloop(t_canim *canim) {
 		render_path(canim);
 
 		glBindTexture(GL_TEXTURE_2D, canim->tex);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, canim->pixels);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, canim->pixels);
 		glEnable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0, 0);

@@ -53,6 +53,7 @@ t_path *create_path(void) {
 	path->stroke.g = 255;
 	path->stroke.b = 255;
 	path->stroke_width = 1;
+	path->stroke_opacity = 255;
 	return path;
 }
 
@@ -281,33 +282,8 @@ t_path *create_circle(t_point c, float r) {
 	add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	path->stroke_width = 10;
 	path->stroke = color_from_hex(0x00ffff00);
-
 	return path;
 }
-
-/*void render_path(t_canim *canim) {*/
-/*	t_path	  *path;*/
-/*	t_segment *segment;*/
-/**/
-/*	path = simple_path();*/
-/*	segment = path->head;*/
-/*	while (segment) {*/
-/*		render_segment(canim, path, segment);*/
-/*		segment = segment->next;*/
-/*	}*/
-/*path = simple_path2();*/
-/*segment = path->head;*/
-/*while (segment) {*/
-/*	render_segment(canim, path, segment);*/
-/*	segment = segment->next;*/
-/*}*/
-/*path = create_circle((t_point){WIDTH / 2, HEIGHT / 2}, 200);*/
-/*segment = path->head;*/
-/*while (segment) {*/
-/*	render_segment(canim, path, segment);*/
-/*	segment = segment->next;*/
-/*}*/
-/*}*/
 
 t_shape *create_shape(t_path *path) {
 	t_shape *shape = malloc(sizeof(t_shape));
@@ -329,16 +305,15 @@ t_shape *add_shape(t_shape *head, t_shape *new) {
 }
 
 void render_path(t_canim *canim) {
-	/*t_shape *shape = malloc(sizeof(t_shape));*/
-
-	/*shape->path = simple_path();*/
-	/*shape->next = NULL;*/
-
 	t_shape *shape = NULL;
 	shape = add_shape(shape, create_shape(simple_path()));
 	shape = add_shape(shape, create_shape(simple_path2()));
-	shape = add_shape(shape, create_shape(simple_path2()));
+	shape->next->path->stroke_width = 1;
 	shape = add_shape(shape, create_shape(create_circle((t_point){(float)WIDTH / 2, (float)HEIGHT / 2}, 200)));
+	t_shape *s2 = create_shape(create_circle((t_point) {(float) WIDTH / 2 + 10, (float) HEIGHT / 2 + 10}, 200));
+	s2->path->stroke = color_from_hex(0xff);
+	s2->path->stroke_opacity = 125;
+	shape = add_shape(shape, s2);
 
 	while (shape) {
 		t_path	  *path = shape->path;

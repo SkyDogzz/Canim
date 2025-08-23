@@ -1,22 +1,22 @@
 #include "canim.h"
 
-static void set_disk_brush(t_canim *canim, int cx, int cy, int stroke_width, t_rgb color) {
+static void set_disk_brush(t_canim *canim, int cx, int cy, int stroke_width, t_rgba colora) {
 	float radius = stroke_width / 2.0f;
 	int	  ir = (int)ceilf(radius);
 	for (int dy = -ir; dy <= ir; dy++) {
 		for (int dx = -ir; dx <= ir; dx++) {
 			if (dx * dx + dy * dy <= radius * radius) {
-				set_pixel(canim, cx + dx, cy + dy, color.r, color.g, color.b);
+				set_pixel(canim, (t_point){cx + dx, cy + dy}, colora);
 			}
 		}
 	}
 }
 
-static void set_brush(t_canim *canim, int cx, int cy, int stroke_width, t_rgb color) {
+static void set_brush(t_canim *canim, int cx, int cy, int stroke_width, t_rgba colora) {
 	int half = stroke_width / 2;
 	for (int dy = -half; dy <= half; dy++) {
 		for (int dx = -half; dx <= half; dx++) {
-			set_pixel(canim, cx + dx, cy + dy, color.r, color.g, color.b);
+			set_pixel(canim, (t_point){cx + dx, cy + dy}, colora);
 		}
 	}
 }
@@ -37,9 +37,9 @@ void render_line_bresen(t_canim *canim, t_path *path, t_point p1, t_point p2) {
 
 	while (1) {
 		if (DISK_BRUSH)
-			set_disk_brush(canim, x1, y1, path->stroke_width, path->stroke);
+			set_disk_brush(canim, x1, y1, path->stroke_width, colora_from_color(path->stroke, path->stroke_opacity));
 		else
-			set_brush(canim, x1, y1, path->stroke_width, path->stroke);
+			set_brush(canim, x1, y1, path->stroke_width, colora_from_color(path->stroke, path->stroke_opacity));
 		if (x1 == x2 && y1 == y2)
 			break;
 		int e2 = 2 * err;
