@@ -19,6 +19,7 @@ OBJ_PATH := obj/
 SRC := main.c \
 	   path/create.c \
 	   display/window.c \
+	   utils/color.c \
 	   math/adaptive.c \
 	   math/bresenham.c \
 	   math/xiolinwu.c

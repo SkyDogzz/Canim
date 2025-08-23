@@ -40,6 +40,13 @@ typedef struct s_rgb {
 	uint8_t b;
 } t_rgb;
 
+typedef struct s_rgba {
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+} t_rgba;
+
 typedef struct s_canim {
 	GLFWwindow	 *window;
 	GLuint		  tex;
@@ -92,5 +99,11 @@ void cubic_adaptive(t_point p1, t_point p2, t_point p3, t_point p4, float tol, t
 
 void render_line_bresen(t_canim *canim, t_path *path, t_point p1, t_point p2);
 void render_line_wu(t_canim *canim, t_path *path, t_point p1, t_point p2);
+
+t_rgb color_from_hex(int hex);
+t_rgb color_from_all(uint8_t r, uint8_t g, uint8_t b);
+t_rgba colora_from_hex(int hex);
+t_rgba colora_from_all(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+t_rgba colora_from_color(t_rgb color, uint8_t a);
 
 #endif

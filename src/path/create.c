@@ -280,9 +280,7 @@ t_path *create_circle(t_point c, float r) {
 	}
 	add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	path->stroke_width = 10;
-	path->stroke.r = 255;
-	path->stroke.g = 0;
-	path->stroke.b = 0;
+	path->stroke = color_from_hex(0x00ffff00);
 
 	return path;
 }
