@@ -47,6 +47,7 @@ typedef struct s_rgba {
 	uint8_t a;
 } t_rgba;
 
+typedef struct s_shape t_shape;
 typedef struct s_canim {
 	GLFWwindow	 *window;
 	GLuint		  tex;
@@ -54,6 +55,7 @@ typedef struct s_canim {
 	size_t		  frame;
 	double		  start_time;
 	double		  last_frame;
+	t_shape		 *shape;
 } t_canim;
 
 typedef enum e_segtype {
@@ -94,7 +96,7 @@ typedef struct s_shape {
 	struct s_shape *next;
 } t_shape;
 
-typedef enum e_animtype { CREATE, TRANSLATE } t_animtype;
+typedef enum e_animtype { CREATE, TRANSLATE, ROTATE } t_animtype;
 
 typedef enum e_animtiming { LINEAR, EASE_IN, EASE_OUT, EASE_IN_OUT } t_animtiming;
 
@@ -108,8 +110,14 @@ typedef struct s_animate {
 	t_animrepeat	  repeat;
 	t_point			  from;
 	t_point			  to;
+	float			  fromA;
+	float			  toA;
 	struct s_animate *next;
 } t_animate;
+
+typedef struct s_luactx {
+	t_canim *canim;
+} t_luactx;
 
 void mainloop(t_canim *canim);
 void set_pixel(t_canim *canim, t_point co, t_rgba colora);
@@ -130,6 +138,15 @@ t_rgba colora_from_color(t_rgb color, uint8_t a);
 t_animate *create_animation(t_animtype type, double start, double duration, double timing, t_animrepeat repeat);
 t_animate *create_translate(t_animtype type, double start, double duration, double timing, t_animrepeat repeat,
 							t_point p1, t_point p2);
+t_animate *create_rotation(t_animtype type, double start, double duration, double timing, t_animrepeat repeat,
+						   float fromA, float toA);
 t_animate *add_animation(t_animate *head, t_animate *new);
+
+t_shape *create_shape(t_path *path);
+t_path	*create_circle(t_point c, float r);
+t_path	*create_square(t_point c, float r, float fi);
+t_shape *add_shape(t_shape *head, t_shape *new);
+
+bool register_lua(t_canim *canim, lua_State *L, char *argv[]);
 
 #endif

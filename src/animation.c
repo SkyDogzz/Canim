@@ -6,7 +6,7 @@ t_animate *create_animation(t_animtype type, double start, double duration, doub
 		return NULL;
 	animation->type = type;
 	animation->start = start;
-	animation->duration = duration * 2;
+	animation->duration = duration;
 	animation->timing = timing;
 	animation->repeat = repeat;
 	animation->next = NULL;
@@ -20,11 +20,27 @@ t_animate *create_translate(t_animtype type, double start, double duration, doub
 		return NULL;
 	animation->type = type;
 	animation->start = start;
-	animation->duration = duration * 2;
+	animation->duration = duration;
 	animation->timing = timing;
 	animation->repeat = repeat;
 	animation->from = p1;
 	animation->to = p2;
+	animation->next = NULL;
+	return animation;
+}
+
+t_animate *create_rotation(t_animtype type, double start, double duration, double timing, t_animrepeat repeat,
+						   float fromA, float toA) {
+	t_animate *animation = malloc(sizeof(t_animate));
+	if (!animation)
+		return NULL;
+	animation->type = type;
+	animation->start = start;
+	animation->duration = duration;
+	animation->timing = timing;
+	animation->repeat = repeat;
+	animation->fromA = fromA;
+	animation->toA = toA;
 	animation->next = NULL;
 	return animation;
 }

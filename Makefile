@@ -23,6 +23,7 @@ SRC := main.c \
 	   math/adaptive.c \
 	   math/bresenham.c \
 	   math/xiolinwu.c \
+	   lua/lua.c \
 	   animation.c
 
 SRCS := $(addprefix $(SRC_PATH), $(SRC))
