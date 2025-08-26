@@ -20,10 +20,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void *init_window(const int width, const int height, const char *title) {
 	GLFWwindow *window;
-	if (!glfwInit()) {
-		printf("Failed to init glfw\n");
-		return NULL;
-	}
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GLFW_CANIM_MAJOR);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GLFW_CANIM_MINOR);
 	if (!(window = glfwCreateWindow(width, height, title, NULL, NULL))) {

@@ -273,12 +273,15 @@ t_path *create_circle(t_point c, float r) {
 							  {{c.x - r, c.y - cc}, {c.x - cc, c.y - r}}};
 
 	t_path *path = create_path();
-	add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(moveto[0].x, moveto[0].y)));
+	t_point *pts = create_point(moveto[0].x, moveto[0].y);
+	add_seg_to_path(path, create_segment(SEG_MOVETO, pts));
+	free(pts);
 
 	for (int i = 0; i < 4; i++) {
 		t_point *pts = create_3_points(controls[i][0].x, controls[i][0].y, controls[i][1].x, controls[i][1].y,
 									   moveto[(i + 1) % 4].x, moveto[(i + 1) % 4].y);
 		add_seg_to_path(path, create_segment(SEG_CUBIC, pts));
+		free(pts);
 	}
 	add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	return path;
@@ -301,16 +304,19 @@ void rotate_points(t_point *pts, int count, t_point center, float angle) {
 }
 
 t_path *create_square(t_point c, float r, float fi) {
-	// base unrotated square
 	t_point points[4] = {
 		{c.x - r / 2, c.y - r / 2}, {c.x + r / 2, c.y - r / 2}, {c.x + r / 2, c.y + r / 2}, {c.x - r / 2, c.y + r / 2}};
 
 	rotate_points(points, 4, c, fi);
 
 	t_path *path = create_path();
-	add_seg_to_path(path, create_segment(SEG_MOVETO, create_point(points[0].x, points[0].y)));
+	t_point *p = create_point(points[0].x, points[0].y);
+	add_seg_to_path(path, create_segment(SEG_MOVETO, p));
+	free(p);
 	for (int i = 1; i < 4; i++) {
-		add_seg_to_path(path, create_segment(SEG_LINETO, create_point(points[i].x, points[i].y)));
+		p = create_point(points[i].x, points[i].y);
+		add_seg_to_path(path, create_segment(SEG_LINETO, p));
+		free(p);
 	}
 	add_seg_to_path(path, create_segment(SEG_CLOSE, NULL));
 	return path;
@@ -575,9 +581,7 @@ float compute_rotation(t_animate *anim) {
 					else
 						progress = 1 - pow(-2 * progress + 2, 2) / 2;
 				}
-				printf("progress = %f\n", progress);
 				current += tmp->fromA + (tmp->toA - tmp->fromA) * progress;
-				printf("cuur = %f\n", (tmp->toA));
 				return current;
 			} else {
 				current += tmp->toA;
