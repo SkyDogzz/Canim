@@ -29,7 +29,7 @@ void *init_window(const int width, const int height, const char *title) {
 		return NULL;
 	}
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	glfwSetKeyCallback(window, key_callback);
 	return window;
 }
