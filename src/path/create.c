@@ -436,8 +436,14 @@ void	render_path(t_canim *canim, t_path *path, float progress) {
 
 	   // draw partial of the next line
 	   if (full < total_lines) {
-		   t_point a = {points[full].x + offset.x, points[full].y + offset.y};
-		   t_point b = {points[full + 1].x + offset.x, points[full + 1].y + offset.y};
+		   t_point a = apply_rotation(points[full], centroid, rotation);
+		   t_point b = apply_rotation(points[full + 1], centroid, rotation);
+
+		   a.x += offset.x;
+		   a.y += offset.y;
+		   b.x += offset.x;
+		   b.y += offset.y;
+
 		   t_point mid = {a.x + (b.x - a.x) * frac, a.y + (b.y - a.y) * frac};
 		   render_line_sel(canim, path, a, mid);
 	   }
